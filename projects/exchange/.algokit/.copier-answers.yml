@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: 1.3.3
+_src_path: gh:algorandfoundation/algokit-python-template
+author_email: 72760281+Tudy00038@users.noreply.github.com
+author_name: Tudy00038
+contract_name: exchange_points
+deployment_language: python
+preset_name: production
+project_name: exchange
+
