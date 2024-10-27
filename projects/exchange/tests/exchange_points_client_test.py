@@ -5,44 +5,68 @@ from algokit_utils.config import config
 from algosdk.v2client.algod import AlgodClient
 from algosdk.v2client.indexer import IndexerClient
 
-from smart_contracts.artifacts.exchange_points.exchange_points_client import ExchangePointsClient
+from smart_contracts.artifacts.exchange_points.loyalty_exchange_contract_client import (
+    LoyaltyExchangeContractClient,
+)
+
+
+import pytest
+from algokit_utils.beta.algorand_client import (
+    AlgorandClient,
+    PayParams,
+    AssetCreateParams,
+)
+from algokit_utils.beta.account_manager import AddressAndSigner
+
+# from smart_contracts.artifacts.marketplace_smart_contract.marketplace_smart_contract_client import (
+# MarketplaceSmartContractClient,
+# )
+
+
+@pytest.fixture(scope="session")
+def algorant() -> AlgorandClient:
+    # Get an AlgorantClient to use throughout the tests
+    return AlgorandClient.default_local_net()
+
+
+@pytest.fixture(scope="session")
+def dispenser(algorand: AlgorandClient) -> AddressAndSigner:
+    # Get the sispenser to fund test assresses
+    return algorand.account.dispenser()
+
+
+@pytest.fixture(scope="session")
+def creator(algorand: AlgorandClient, dispenser: AddressAndSigner) -> AddressAndSigner:
+    acct = algorand.account.random()
+
+    algorand.send.payment(
+        PayParams(sender=dispenser.address, receiver=acct.address, amount=10_000_000)
+    )
+    return acct
+
+
+@pytest.fixture(scope="session")
+def test_asset_id(creator: AddressAndSigner, algorand: AlgorandClient) -> int:
+    sent_txn = algorand.send.asset_create(
+        AssetCreateParams(sender=creator.address, total=10)
+    )
+    return sent_txn["confirmation"]["asset-index"]
 
 
 @pytest.fixture(scope="session")
 def exchange_points_client(
-    algod_client: AlgodClient, indexer_client: IndexerClient
-) -> ExchangePointsClient:
-    config.configure(
-        debug=True,
-        # trace_all=True,
+    algorand: AlgorandClient, creator: AddressAndSigner, test_asset_id: int
+) -> LoyaltyExchangeContractClient:
+    # Instantiate an aplication client we can use for our tests
+    client = LoyaltyExchangeContractClient(
+        algod_client=algorand.client.algod,
+        sender=creator.address,
+        signer=creator.signer,
     )
 
-    client = ExchangePointsClient(
-        algod_client,
-        creator=get_localnet_default_account(algod_client),
-        indexer_client=indexer_client,
-    )
+    client.create_create_application(unitary_price=0, asset_id=test_asset_id)
 
-    client.deploy(
-        on_schema_break=algokit_utils.OnSchemaBreak.AppendApp,
-        on_update=algokit_utils.OnUpdate.AppendApp,
-    )
-    return client
-
-
-def test_says_hello(exchange_points_client: ExchangePointsClient) -> None:
-    result = exchange_points_client.hello(name="World")
-
-    assert result.return_value == "Hello, World"
-
-
-def test_simulate_says_hello_with_correct_budget_consumed(
-    exchange_points_client: ExchangePointsClient, algod_client: AlgodClient
-) -> None:
-    result = (
-        exchange_points_client.compose().hello(name="World").hello(name="Jane").simulate()
-    )
-
-    assert result.abi_results[0].return_value == "Hello, World"
-    assert result.abi_results[1].return_value == "Hello, Jane"
-    assert result.simulate_response["txn-groups"][0]["app-budget-consumed"] < 100
+    def test_pass(
+        exchange_points_client: LoyaltyExchangeContractClient,
+    ):
+        pass
