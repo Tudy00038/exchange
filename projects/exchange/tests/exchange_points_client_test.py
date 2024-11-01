@@ -1,72 +1,106 @@
-import algokit_utils
-import pytest
-from algokit_utils import get_localnet_default_account
-from algokit_utils.config import config
-from algosdk.v2client.algod import AlgodClient
-from algosdk.v2client.indexer import IndexerClient
+# import algokit_utils
+# import pytest
+# from algokit_utils import get_localnet_default_account
+# from algokit_utils.config import config
+# from algosdk.v2client.algod import AlgodClient
+# from algosdk.v2client.indexer import IndexerClient
 
-from smart_contracts.artifacts.exchange_points.loyalty_exchange_contract_client import (
-    LoyaltyExchangeContractClient,
-)
-
-
-import pytest
-from algokit_utils.beta.algorand_client import (
-    AlgorandClient,
-    PayParams,
-    AssetCreateParams,
-)
-from algokit_utils.beta.account_manager import AddressAndSigner
-
-# from smart_contracts.artifacts.marketplace_smart_contract.marketplace_smart_contract_client import (
-# MarketplaceSmartContractClient,
+# from smart_contracts.artifacts.smart_contract_two.loyalty_exchange_contract_client import (
+#     LoyaltyExchangeContractClient,
 # )
 
 
-@pytest.fixture(scope="session")
-def algorant() -> AlgorandClient:
-    # Get an AlgorantClient to use throughout the tests
-    return AlgorandClient.default_local_net()
+# import pytest
+# from algopy import *
+# from smart_contract_two.contract import LoyaltyExchangeContract
+# from algopy_testing import algopy_testing_context
 
 
-@pytest.fixture(scope="session")
-def dispenser(algorand: AlgorandClient) -> AddressAndSigner:
-    # Get the sispenser to fund test assresses
-    return algorand.account.dispenser()
+# @pytest.fixture
+# def deployed_contract():
+#     with algopy_testing_context() as context:
+#         contract = LoyaltyExchangeContract()
+#         ograda_asset = Asset(1001)
+
+#         laciaun_asset = Asset(1002)
+#         exchange_rate = UInt64(10)
+#         contract.createApplication(
+#             lei_ograda_points=ograda_asset,
+#             lei_laciaun_points=laciaun_asset,
+#             exchange_rate=exchange_rate,
+#         )
+#         print(contract.lei_laciaun_points_asset_id)
+#         print
+#         yield contract
 
 
-@pytest.fixture(scope="session")
-def creator(algorand: AlgorandClient, dispenser: AddressAndSigner) -> AddressAndSigner:
-    acct = algorand.account.random()
+# def test_opt_in_to_assets(deployed_contract):
+#     contract = deployed_contract
+#     mbrPay = gtxn.PaymentTransaction(
+#         receiver=Global.current_application_address,
+#         amount=Global.min_balance + Global.asset_opt_in_min_balance,
+#     )
+#     contract.optInToAssets(mbrPay)
+#     assert Global.current_application_address.is_opted_in(
+#         Asset(contract.lei_ograda_points)
+#     )
+#     assert Global.current_application_address.is_opted_in(
+#         Asset(contract.lei_laciaun_points_asset_id)
+#     )
 
-    algorand.send.payment(
-        PayParams(sender=dispenser.address, receiver=acct.address, amount=10_000_000)
+#     with pytest.raises(Exception):
+#         contract.optInToAssets(mbrPay)
+
+
+# def test_delete_application(deployed_contract):
+#     contract = deployed_contract
+#     contract.deleteApplication()
+#     assert Global.current_application_address.is_deleted()
+
+#     with pytest.raises(Exception):
+#         contract.deleteApplication()
+
+
+import pytest
+from algopy import *
+from algosdk.v2client.algod import AlgodClient
+from smart_contracts.exchange_points import LoyaltyExchangeContract
+from algopy_testing import algopy_testing_context
+
+
+# @pytest.fixture
+# def deployed_contract():
+#     with algopy_testing_context() as context:
+#         contract = LoyaltyExchangeContract()
+#         ograda_asset = Asset(1001)
+#         laciaun_asset = Asset(1002)
+#         exchange_rate = UInt64(10)
+#         contract.createApplication(
+#             lei_ograda_points=ograda_asset,
+#             lei_laciaun_points=laciaun_asset,
+#             exchange_rate=exchange_rate,
+#         )
+#         yield contract
+
+
+# @algopy_testing_context()
+def test_opt_in_to_assets(deployed_contract):
+    contract = deployed_contract
+    mbrPay = gtxn.PaymentTransaction(
+        receiver=Global.current_application_address,
+        amount=Global.min_balance + Global.asset_opt_in_min_balance,
     )
-    return acct
-
-
-@pytest.fixture(scope="session")
-def test_asset_id(creator: AddressAndSigner, algorand: AlgorandClient) -> int:
-    sent_txn = algorand.send.asset_create(
-        AssetCreateParams(sender=creator.address, total=10)
+    contract.optInToAssets(mbrPay)
+    assert Global.current_application_address.is_opted_in(
+        Asset(contract.lei_ograda_points_asset_id)
     )
-    return sent_txn["confirmation"]["asset-index"]
-
-
-@pytest.fixture(scope="session")
-def exchange_points_client(
-    algorand: AlgorandClient, creator: AddressAndSigner, test_asset_id: int
-) -> LoyaltyExchangeContractClient:
-    # Instantiate an aplication client we can use for our tests
-    client = LoyaltyExchangeContractClient(
-        algod_client=algorand.client.algod,
-        sender=creator.address,
-        signer=creator.signer,
+    assert Global.current_application_address.is_opted_in(
+        Asset(contract.lei_laciaun_points_asset_id)
     )
 
-    client.create_create_application(unitary_price=0, asset_id=test_asset_id)
 
-    def test_pass(
-        exchange_points_client: LoyaltyExchangeContractClient,
-    ):
-        pass
+# @algopy_testing_context()
+def test_delete_application(deployed_contract):
+    contract = deployed_contract
+    contract.deleteApplication()
+    assert Global.current_application_address.is_deleted()
