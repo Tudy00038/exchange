@@ -61,11 +61,11 @@
 #         contract.deleteApplication()
 
 
-import pytest
-from algopy import *
-from algosdk.v2client.algod import AlgodClient
-from smart_contracts.exchange_points import LoyaltyExchangeContract
-from algopy_testing import algopy_testing_context
+# import pytest
+# from algopy import *
+# from algosdk.v2client.algod import AlgodClient
+# from smart_contracts.exchange_points import LoyaltyExchangeContract
+# from algopy_testing import algopy_testing_context
 
 
 # @pytest.fixture
@@ -84,23 +84,23 @@ from algopy_testing import algopy_testing_context
 
 
 # @algopy_testing_context()
-def test_opt_in_to_assets(deployed_contract):
-    contract = deployed_contract
-    mbrPay = gtxn.PaymentTransaction(
-        receiver=Global.current_application_address,
-        amount=Global.min_balance + Global.asset_opt_in_min_balance,
-    )
-    contract.optInToAssets(mbrPay)
-    assert Global.current_application_address.is_opted_in(
-        Asset(contract.lei_ograda_points_asset_id)
-    )
-    assert Global.current_application_address.is_opted_in(
-        Asset(contract.lei_laciaun_points_asset_id)
-    )
+# def test_opt_in_to_assets(deployed_contract):
+#     contract = deployed_contract
+#     mbrPay = gtxn.PaymentTransaction(
+#         receiver=Global.current_application_address,
+#         amount=Global.min_balance + Global.asset_opt_in_min_balance,
+#     )
+#     contract.optInToAssets(mbrPay)
+#     assert Global.current_application_address.is_opted_in(
+#         Asset(contract.lei_ograda_points_asset_id)
+#     )
+#     assert Global.current_application_address.is_opted_in(
+#         Asset(contract.lei_laciaun_points_asset_id)
+#     )
 
 
-# @algopy_testing_context()
-def test_delete_application(deployed_contract):
-    contract = deployed_contract
-    contract.deleteApplication()
-    assert Global.current_application_address.is_deleted()
+# # @algopy_testing_context()
+# def test_delete_application(deployed_contract):
+#     contract = deployed_contract
+#     contract.deleteApplication()
+#     assert Global.current_application_address.is_deleted()

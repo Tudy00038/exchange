@@ -23,22 +23,22 @@ from algosdk.atomic_transaction_composer import (
 
 _APP_SPEC_JSON = r"""{
     "hints": {
-        "createApplication(asset,asset,uint64)void": {
+        "createApplication(asset,uint64)void": {
             "call_config": {
                 "no_op": "CREATE"
             }
         },
-        "setExchangeRate(uint64)void": {
+        "setPrice(uint64)void": {
             "call_config": {
                 "no_op": "CALL"
             }
         },
-        "optInToAssets(pay)void": {
+        "optInToAsset(pay)void": {
             "call_config": {
                 "no_op": "CALL"
             }
         },
-        "exchangePoints(axfer,uint64)void": {
+        "buy(pay,uint64)void": {
             "call_config": {
                 "no_op": "CALL"
             }
@@ -50,13 +50,13 @@ _APP_SPEC_JSON = r"""{
         }
     },
     "source": {
-        "approval": "I3ByYWdtYSB2ZXJzaW9uIDEwCgpzbWFydF9jb250cmFjdHMuZXhjaGFuZ2VfcG9pbnRzLmNvbnRyYWN0LkxveWFsdHlFeGNoYW5nZUNvbnRyYWN0LmFwcHJvdmFsX3Byb2dyYW06CiAgICBjYWxsc3ViIF9fcHV5YV9hcmM0X3JvdXRlcl9fCiAgICByZXR1cm4KCgovLyBzbWFydF9jb250cmFjdHMuZXhjaGFuZ2VfcG9pbnRzLmNvbnRyYWN0LkxveWFsdHlFeGNoYW5nZUNvbnRyYWN0Ll9fcHV5YV9hcmM0X3JvdXRlcl9fKCkgLT4gdWludDY0OgpfX3B1eWFfYXJjNF9yb3V0ZXJfXzoKICAgIHByb3RvIDAgMQogICAgdHhuIE51bUFwcEFyZ3MKICAgIGJ6IF9fcHV5YV9hcmM0X3JvdXRlcl9fX2FmdGVyX2lmX2Vsc2VAMTAKICAgIG1ldGhvZCAiY3JlYXRlQXBwbGljYXRpb24oYXNzZXQsYXNzZXQsdWludDY0KXZvaWQiCiAgICBtZXRob2QgInNldEV4Y2hhbmdlUmF0ZSh1aW50NjQpdm9pZCIKICAgIG1ldGhvZCAib3B0SW5Ub0Fzc2V0cyhwYXkpdm9pZCIKICAgIG1ldGhvZCAiZXhjaGFuZ2VQb2ludHMoYXhmZXIsdWludDY0KXZvaWQiCiAgICBtZXRob2QgImRlbGV0ZUFwcGxpY2F0aW9uKCl2b2lkIgogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMAogICAgbWF0Y2ggX19wdXlhX2FyYzRfcm91dGVyX19fY3JlYXRlQXBwbGljYXRpb25fcm91dGVAMiBfX3B1eWFfYXJjNF9yb3V0ZXJfX19zZXRFeGNoYW5nZVJhdGVfcm91dGVAMyBfX3B1eWFfYXJjNF9yb3V0ZXJfX19vcHRJblRvQXNzZXRzX3JvdXRlQDQgX19wdXlhX2FyYzRfcm91dGVyX19fZXhjaGFuZ2VQb2ludHNfcm91dGVANSBfX3B1eWFfYXJjNF9yb3V0ZXJfX19kZWxldGVBcHBsaWNhdGlvbl9yb3V0ZUA2CiAgICBpbnQgMAogICAgcmV0c3ViCgpfX3B1eWFfYXJjNF9yb3V0ZXJfX19jcmVhdGVBcHBsaWNhdGlvbl9yb3V0ZUAyOgogICAgdHhuIE9uQ29tcGxldGlvbgogICAgIQogICAgYXNzZXJ0IC8vIE9uQ29tcGxldGlvbiBpcyBOb09wCiAgICB0eG4gQXBwbGljYXRpb25JRAogICAgIQogICAgYXNzZXJ0IC8vIGlzIGNyZWF0aW5nCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAxCiAgICBidG9pCiAgICB0eG5hcyBBc3NldHMKICAgIHR4bmEgQXBwbGljYXRpb25BcmdzIDIKICAgIGJ0b2kKICAgIHR4bmFzIEFzc2V0cwogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMwogICAgYnRvaQogICAgY2FsbHN1YiBjcmVhdGVBcHBsaWNhdGlvbgogICAgaW50IDEKICAgIHJldHN1YgoKX19wdXlhX2FyYzRfcm91dGVyX19fc2V0RXhjaGFuZ2VSYXRlX3JvdXRlQDM6CiAgICB0eG4gT25Db21wbGV0aW9uCiAgICAhCiAgICBhc3NlcnQgLy8gT25Db21wbGV0aW9uIGlzIE5vT3AKICAgIHR4biBBcHBsaWNhdGlvbklECiAgICBhc3NlcnQgLy8gaXMgbm90IGNyZWF0aW5nCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAxCiAgICBidG9pCiAgICBjYWxsc3ViIHNldEV4Y2hhbmdlUmF0ZQogICAgaW50IDEKICAgIHJldHN1YgoKX19wdXlhX2FyYzRfcm91dGVyX19fb3B0SW5Ub0Fzc2V0c19yb3V0ZUA0OgogICAgdHhuIE9uQ29tcGxldGlvbgogICAgIQogICAgYXNzZXJ0IC8vIE9uQ29tcGxldGlvbiBpcyBOb09wCiAgICB0eG4gQXBwbGljYXRpb25JRAogICAgYXNzZXJ0IC8vIGlzIG5vdCBjcmVhdGluZwogICAgdHhuIEdyb3VwSW5kZXgKICAgIGludCAxCiAgICAtCiAgICBkdXAKICAgIGd0eG5zIFR5cGVFbnVtCiAgICBpbnQgcGF5CiAgICA9PQogICAgYXNzZXJ0IC8vIHRyYW5zYWN0aW9uIHR5cGUgaXMgcGF5CiAgICBjYWxsc3ViIG9wdEluVG9Bc3NldHMKICAgIGludCAxCiAgICByZXRzdWIKCl9fcHV5YV9hcmM0X3JvdXRlcl9fX2V4Y2hhbmdlUG9pbnRzX3JvdXRlQDU6CiAgICB0eG4gT25Db21wbGV0aW9uCiAgICAhCiAgICBhc3NlcnQgLy8gT25Db21wbGV0aW9uIGlzIE5vT3AKICAgIHR4biBBcHBsaWNhdGlvbklECiAgICBhc3NlcnQgLy8gaXMgbm90IGNyZWF0aW5nCiAgICB0eG4gR3JvdXBJbmRleAogICAgaW50IDEKICAgIC0KICAgIGR1cAogICAgZ3R4bnMgVHlwZUVudW0KICAgIGludCBheGZlcgogICAgPT0KICAgIGFzc2VydCAvLyB0cmFuc2FjdGlvbiB0eXBlIGlzIGF4ZmVyCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAxCiAgICBidG9pCiAgICBjYWxsc3ViIGV4Y2hhbmdlUG9pbnRzCiAgICBpbnQgMQogICAgcmV0c3ViCgpfX3B1eWFfYXJjNF9yb3V0ZXJfX19kZWxldGVBcHBsaWNhdGlvbl9yb3V0ZUA2OgogICAgdHhuIE9uQ29tcGxldGlvbgogICAgaW50IERlbGV0ZUFwcGxpY2F0aW9uCiAgICA9PQogICAgYXNzZXJ0IC8vIE9uQ29tcGxldGlvbiBpcyBEZWxldGVBcHBsaWNhdGlvbgogICAgdHhuIEFwcGxpY2F0aW9uSUQKICAgIGFzc2VydCAvLyBpcyBub3QgY3JlYXRpbmcKICAgIGNhbGxzdWIgZGVsZXRlQXBwbGljYXRpb24KICAgIGludCAxCiAgICByZXRzdWIKCl9fcHV5YV9hcmM0X3JvdXRlcl9fX2FmdGVyX2lmX2Vsc2VAMTA6CiAgICBpbnQgMAogICAgcmV0c3ViCgoKLy8gc21hcnRfY29udHJhY3RzLmV4Y2hhbmdlX3BvaW50cy5jb250cmFjdC5Mb3lhbHR5RXhjaGFuZ2VDb250cmFjdC5jcmVhdGVBcHBsaWNhdGlvbihsZWlfb2dyYWRhX3BvaW50czogdWludDY0LCBsZWlfbGFjaWF1bl9wb2ludHM6IHVpbnQ2NCwgZXhjaGFuZ2VfcmF0ZTogdWludDY0KSAtPiB2b2lkOgpjcmVhdGVBcHBsaWNhdGlvbjoKICAgIHByb3RvIDMgMAogICAgYnl0ZSAibGVpX29ncmFkYV9wb2ludHNfYXNzZXRfaWQiCiAgICBmcmFtZV9kaWcgLTMKICAgIGFwcF9nbG9iYWxfcHV0CiAgICBieXRlICJsZWlfbGFjaWF1bl9wb2ludHNfYXNzZXRfaWQiCiAgICBmcmFtZV9kaWcgLTIKICAgIGFwcF9nbG9iYWxfcHV0CiAgICBieXRlICJleGNoYW5nZV9yYXRlIgogICAgZnJhbWVfZGlnIC0xCiAgICBhcHBfZ2xvYmFsX3B1dAogICAgcmV0c3ViCgoKLy8gc21hcnRfY29udHJhY3RzLmV4Y2hhbmdlX3BvaW50cy5jb250cmFjdC5Mb3lhbHR5RXhjaGFuZ2VDb250cmFjdC5zZXRFeGNoYW5nZVJhdGUobmV3X3JhdGU6IHVpbnQ2NCkgLT4gdm9pZDoKc2V0RXhjaGFuZ2VSYXRlOgogICAgcHJvdG8gMSAwCiAgICB0eG4gU2VuZGVyCiAgICBnbG9iYWwgQ3JlYXRvckFkZHJlc3MKICAgID09CiAgICBhc3NlcnQKICAgIGJ5dGUgImV4Y2hhbmdlX3JhdGUiCiAgICBmcmFtZV9kaWcgLTEKICAgIGFwcF9nbG9iYWxfcHV0CiAgICByZXRzdWIKCgovLyBzbWFydF9jb250cmFjdHMuZXhjaGFuZ2VfcG9pbnRzLmNvbnRyYWN0LkxveWFsdHlFeGNoYW5nZUNvbnRyYWN0Lm9wdEluVG9Bc3NldHMobWJyUGF5OiB1aW50NjQpIC0+IHZvaWQ6Cm9wdEluVG9Bc3NldHM6CiAgICBwcm90byAxIDAKICAgIHR4biBTZW5kZXIKICAgIGdsb2JhbCBDcmVhdG9yQWRkcmVzcwogICAgPT0KICAgIGFzc2VydAogICAgZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKICAgIGludCAwCiAgICBieXRlICJsZWlfb2dyYWRhX3BvaW50c19hc3NldF9pZCIKICAgIGFwcF9nbG9iYWxfZ2V0X2V4CiAgICBhc3NlcnQgLy8gY2hlY2sgc2VsZi5sZWlfb2dyYWRhX3BvaW50c19hc3NldF9pZCBleGlzdHMKICAgIGFzc2V0X2hvbGRpbmdfZ2V0IEFzc2V0QmFsYW5jZQogICAgYnVyeSAxCiAgICBibnogb3B0SW5Ub0Fzc2V0c19hZnRlcl9pZl9lbHNlQDMKICAgIGZyYW1lX2RpZyAtMQogICAgZ3R4bnMgUmVjZWl2ZXIKICAgIGdsb2JhbCBDdXJyZW50QXBwbGljYXRpb25BZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0CiAgICBmcmFtZV9kaWcgLTEKICAgIGd0eG5zIEFtb3VudAogICAgZ2xvYmFsIE1pbkJhbGFuY2UKICAgIGdsb2JhbCBBc3NldE9wdEluTWluQmFsYW5jZQogICAgKwogICAgPT0KICAgIGFzc2VydAogICAgaXR4bl9iZWdpbgogICAgaW50IDAKICAgIGJ5dGUgImxlaV9vZ3JhZGFfcG9pbnRzX2Fzc2V0X2lkIgogICAgYXBwX2dsb2JhbF9nZXRfZXgKICAgIGFzc2VydCAvLyBjaGVjayBzZWxmLmxlaV9vZ3JhZGFfcG9pbnRzX2Fzc2V0X2lkIGV4aXN0cwogICAgZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKICAgIGludCAwCiAgICBpdHhuX2ZpZWxkIEFzc2V0QW1vdW50CiAgICBpdHhuX2ZpZWxkIEFzc2V0UmVjZWl2ZXIKICAgIGl0eG5fZmllbGQgWGZlckFzc2V0CiAgICBpbnQgYXhmZXIKICAgIGl0eG5fZmllbGQgVHlwZUVudW0KICAgIGludCAwCiAgICBpdHhuX2ZpZWxkIEZlZQogICAgaXR4bl9zdWJtaXQKCm9wdEluVG9Bc3NldHNfYWZ0ZXJfaWZfZWxzZUAzOgogICAgZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKICAgIGludCAwCiAgICBieXRlICJsZWlfbGFjaWF1bl9wb2ludHNfYXNzZXRfaWQiCiAgICBhcHBfZ2xvYmFsX2dldF9leAogICAgYXNzZXJ0IC8vIGNoZWNrIHNlbGYubGVpX2xhY2lhdW5fcG9pbnRzX2Fzc2V0X2lkIGV4aXN0cwogICAgYXNzZXRfaG9sZGluZ19nZXQgQXNzZXRCYWxhbmNlCiAgICBidXJ5IDEKICAgIGJueiBvcHRJblRvQXNzZXRzX2FmdGVyX2lmX2Vsc2VANgogICAgZnJhbWVfZGlnIC0xCiAgICBndHhucyBSZWNlaXZlcgogICAgZ2xvYmFsIEN1cnJlbnRBcHBsaWNhdGlvbkFkZHJlc3MKICAgID09CiAgICBhc3NlcnQKICAgIGZyYW1lX2RpZyAtMQogICAgZ3R4bnMgQW1vdW50CiAgICBnbG9iYWwgTWluQmFsYW5jZQogICAgZ2xvYmFsIEFzc2V0T3B0SW5NaW5CYWxhbmNlCiAgICArCiAgICA9PQogICAgYXNzZXJ0CiAgICBpdHhuX2JlZ2luCiAgICBpbnQgMAogICAgYnl0ZSAibGVpX2xhY2lhdW5fcG9pbnRzX2Fzc2V0X2lkIgogICAgYXBwX2dsb2JhbF9nZXRfZXgKICAgIGFzc2VydCAvLyBjaGVjayBzZWxmLmxlaV9sYWNpYXVuX3BvaW50c19hc3NldF9pZCBleGlzdHMKICAgIGdsb2JhbCBDdXJyZW50QXBwbGljYXRpb25BZGRyZXNzCiAgICBpbnQgMAogICAgaXR4bl9maWVsZCBBc3NldEFtb3VudAogICAgaXR4bl9maWVsZCBBc3NldFJlY2VpdmVyCiAgICBpdHhuX2ZpZWxkIFhmZXJBc3NldAogICAgaW50IGF4ZmVyCiAgICBpdHhuX2ZpZWxkIFR5cGVFbnVtCiAgICBpbnQgMAogICAgaXR4bl9maWVsZCBGZWUKICAgIGl0eG5fc3VibWl0CgpvcHRJblRvQXNzZXRzX2FmdGVyX2lmX2Vsc2VANjoKICAgIHJldHN1YgoKCi8vIHNtYXJ0X2NvbnRyYWN0cy5leGNoYW5nZV9wb2ludHMuY29udHJhY3QuTG95YWx0eUV4Y2hhbmdlQ29udHJhY3QuZXhjaGFuZ2VQb2ludHMob2dyYWRhX3RyYW5zZmVyOiB1aW50NjQsIHF1YW50aXR5OiB1aW50NjQpIC0+IHZvaWQ6CmV4Y2hhbmdlUG9pbnRzOgogICAgcHJvdG8gMiAwCiAgICBmcmFtZV9kaWcgLTIKICAgIGd0eG5zIFhmZXJBc3NldAogICAgaW50IDAKICAgIGJ5dGUgImxlaV9vZ3JhZGFfcG9pbnRzX2Fzc2V0X2lkIgogICAgYXBwX2dsb2JhbF9nZXRfZXgKICAgIGFzc2VydCAvLyBjaGVjayBzZWxmLmxlaV9vZ3JhZGFfcG9pbnRzX2Fzc2V0X2lkIGV4aXN0cwogICAgPT0KICAgIGFzc2VydAogICAgZnJhbWVfZGlnIC0yCiAgICBndHhucyBBc3NldFJlY2VpdmVyCiAgICBnbG9iYWwgQ3VycmVudEFwcGxpY2F0aW9uQWRkcmVzcwogICAgPT0KICAgIGFzc2VydAogICAgZnJhbWVfZGlnIC0yCiAgICBndHhucyBBc3NldEFtb3VudAogICAgZnJhbWVfZGlnIC0xCiAgICA9PQogICAgYXNzZXJ0CiAgICBpbnQgMAogICAgYnl0ZSAiZXhjaGFuZ2VfcmF0ZSIKICAgIGFwcF9nbG9iYWxfZ2V0X2V4CiAgICBhc3NlcnQgLy8gY2hlY2sgc2VsZi5leGNoYW5nZV9yYXRlIGV4aXN0cwogICAgZnJhbWVfZGlnIC0xCiAgICAqCiAgICBpdHhuX2JlZ2luCiAgICBpbnQgMAogICAgYnl0ZSAibGVpX2xhY2lhdW5fcG9pbnRzX2Fzc2V0X2lkIgogICAgYXBwX2dsb2JhbF9nZXRfZXgKICAgIGFzc2VydCAvLyBjaGVjayBzZWxmLmxlaV9sYWNpYXVuX3BvaW50c19hc3NldF9pZCBleGlzdHMKICAgIGZyYW1lX2RpZyAtMgogICAgZ3R4bnMgU2VuZGVyCiAgICB1bmNvdmVyIDIKICAgIGl0eG5fZmllbGQgQXNzZXRBbW91bnQKICAgIGl0eG5fZmllbGQgQXNzZXRSZWNlaXZlcgogICAgaXR4bl9maWVsZCBYZmVyQXNzZXQKICAgIGludCBheGZlcgogICAgaXR4bl9maWVsZCBUeXBlRW51bQogICAgaW50IDAKICAgIGl0eG5fZmllbGQgRmVlCiAgICBpdHhuX3N1Ym1pdAogICAgcmV0c3ViCgoKLy8gc21hcnRfY29udHJhY3RzLmV4Y2hhbmdlX3BvaW50cy5jb250cmFjdC5Mb3lhbHR5RXhjaGFuZ2VDb250cmFjdC5kZWxldGVBcHBsaWNhdGlvbigpIC0+IHZvaWQ6CmRlbGV0ZUFwcGxpY2F0aW9uOgogICAgcHJvdG8gMCAwCiAgICB0eG4gU2VuZGVyCiAgICBnbG9iYWwgQ3JlYXRvckFkZHJlc3MKICAgID09CiAgICBhc3NlcnQKICAgIGl0eG5fYmVnaW4KICAgIGludCAwCiAgICBieXRlICJsZWlfb2dyYWRhX3BvaW50c19hc3NldF9pZCIKICAgIGFwcF9nbG9iYWxfZ2V0X2V4CiAgICBhc3NlcnQgLy8gY2hlY2sgc2VsZi5sZWlfb2dyYWRhX3BvaW50c19hc3NldF9pZCBleGlzdHMKICAgIGdsb2JhbCBDcmVhdG9yQWRkcmVzcwogICAgZHVwCiAgICBpdHhuX2ZpZWxkIEFzc2V0Q2xvc2VUbwogICAgaW50IDAKICAgIGl0eG5fZmllbGQgQXNzZXRBbW91bnQKICAgIGl0eG5fZmllbGQgQXNzZXRSZWNlaXZlcgogICAgaXR4bl9maWVsZCBYZmVyQXNzZXQKICAgIGludCBheGZlcgogICAgaXR4bl9maWVsZCBUeXBlRW51bQogICAgaW50IDAKICAgIGl0eG5fZmllbGQgRmVlCiAgICBpdHhuX3N1Ym1pdAogICAgaXR4bl9iZWdpbgogICAgaW50IDAKICAgIGJ5dGUgImxlaV9sYWNpYXVuX3BvaW50c19hc3NldF9pZCIKICAgIGFwcF9nbG9iYWxfZ2V0X2V4CiAgICBhc3NlcnQgLy8gY2hlY2sgc2VsZi5sZWlfbGFjaWF1bl9wb2ludHNfYXNzZXRfaWQgZXhpc3RzCiAgICBnbG9iYWwgQ3JlYXRvckFkZHJlc3MKICAgIGR1cAogICAgaXR4bl9maWVsZCBBc3NldENsb3NlVG8KICAgIGludCAwCiAgICBpdHhuX2ZpZWxkIEFzc2V0QW1vdW50CiAgICBpdHhuX2ZpZWxkIEFzc2V0UmVjZWl2ZXIKICAgIGl0eG5fZmllbGQgWGZlckFzc2V0CiAgICBpbnQgYXhmZXIKICAgIGl0eG5fZmllbGQgVHlwZUVudW0KICAgIGludCAwCiAgICBpdHhuX2ZpZWxkIEZlZQogICAgaXR4bl9zdWJtaXQKICAgIGl0eG5fYmVnaW4KICAgIGdsb2JhbCBDcmVhdG9yQWRkcmVzcwogICAgZHVwCiAgICBpdHhuX2ZpZWxkIENsb3NlUmVtYWluZGVyVG8KICAgIGludCAwCiAgICBpdHhuX2ZpZWxkIEFtb3VudAogICAgaXR4bl9maWVsZCBSZWNlaXZlcgogICAgaW50IHBheQogICAgaXR4bl9maWVsZCBUeXBlRW51bQogICAgaW50IDAKICAgIGl0eG5fZmllbGQgRmVlCiAgICBpdHhuX3N1Ym1pdAogICAgcmV0c3ViCg==",
-        "clear": "I3ByYWdtYSB2ZXJzaW9uIDEwCgpzbWFydF9jb250cmFjdHMuZXhjaGFuZ2VfcG9pbnRzLmNvbnRyYWN0LkxveWFsdHlFeGNoYW5nZUNvbnRyYWN0LmNsZWFyX3N0YXRlX3Byb2dyYW06CiAgICBpbnQgMQogICAgcmV0dXJuCg=="
+        "approval": "I3ByYWdtYSB2ZXJzaW9uIDEwCgpzbWFydF9jb250cmFjdHMuZXhjaGFuZ2VfcG9pbnRzLmNvbnRyYWN0Lk1hcmtldHBsYWNlU21hcnRDb250cmFjdC5hcHByb3ZhbF9wcm9ncmFtOgogICAgY2FsbHN1YiBfX3B1eWFfYXJjNF9yb3V0ZXJfXwogICAgcmV0dXJuCgoKLy8gc21hcnRfY29udHJhY3RzLmV4Y2hhbmdlX3BvaW50cy5jb250cmFjdC5NYXJrZXRwbGFjZVNtYXJ0Q29udHJhY3QuX19wdXlhX2FyYzRfcm91dGVyX18oKSAtPiB1aW50NjQ6Cl9fcHV5YV9hcmM0X3JvdXRlcl9fOgogICAgcHJvdG8gMCAxCiAgICB0eG4gTnVtQXBwQXJncwogICAgYnogX19wdXlhX2FyYzRfcm91dGVyX19fYWZ0ZXJfaWZfZWxzZUAxMAogICAgbWV0aG9kICJjcmVhdGVBcHBsaWNhdGlvbihhc3NldCx1aW50NjQpdm9pZCIKICAgIG1ldGhvZCAic2V0UHJpY2UodWludDY0KXZvaWQiCiAgICBtZXRob2QgIm9wdEluVG9Bc3NldChwYXkpdm9pZCIKICAgIG1ldGhvZCAiYnV5KHBheSx1aW50NjQpdm9pZCIKICAgIG1ldGhvZCAiZGVsZXRlQXBwbGljYXRpb24oKXZvaWQiCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAwCiAgICBtYXRjaCBfX3B1eWFfYXJjNF9yb3V0ZXJfX19jcmVhdGVBcHBsaWNhdGlvbl9yb3V0ZUAyIF9fcHV5YV9hcmM0X3JvdXRlcl9fX3NldFByaWNlX3JvdXRlQDMgX19wdXlhX2FyYzRfcm91dGVyX19fb3B0SW5Ub0Fzc2V0X3JvdXRlQDQgX19wdXlhX2FyYzRfcm91dGVyX19fYnV5X3JvdXRlQDUgX19wdXlhX2FyYzRfcm91dGVyX19fZGVsZXRlQXBwbGljYXRpb25fcm91dGVANgogICAgaW50IDAKICAgIHJldHN1YgoKX19wdXlhX2FyYzRfcm91dGVyX19fY3JlYXRlQXBwbGljYXRpb25fcm91dGVAMjoKICAgIHR4biBPbkNvbXBsZXRpb24KICAgICEKICAgIGFzc2VydCAvLyBPbkNvbXBsZXRpb24gaXMgTm9PcAogICAgdHhuIEFwcGxpY2F0aW9uSUQKICAgICEKICAgIGFzc2VydCAvLyBpcyBjcmVhdGluZwogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQogICAgYnRvaQogICAgdHhuYXMgQXNzZXRzCiAgICB0eG5hIEFwcGxpY2F0aW9uQXJncyAyCiAgICBidG9pCiAgICBjYWxsc3ViIGNyZWF0ZUFwcGxpY2F0aW9uCiAgICBpbnQgMQogICAgcmV0c3ViCgpfX3B1eWFfYXJjNF9yb3V0ZXJfX19zZXRQcmljZV9yb3V0ZUAzOgogICAgdHhuIE9uQ29tcGxldGlvbgogICAgIQogICAgYXNzZXJ0IC8vIE9uQ29tcGxldGlvbiBpcyBOb09wCiAgICB0eG4gQXBwbGljYXRpb25JRAogICAgYXNzZXJ0IC8vIGlzIG5vdCBjcmVhdGluZwogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQogICAgYnRvaQogICAgY2FsbHN1YiBzZXRQcmljZQogICAgaW50IDEKICAgIHJldHN1YgoKX19wdXlhX2FyYzRfcm91dGVyX19fb3B0SW5Ub0Fzc2V0X3JvdXRlQDQ6CiAgICB0eG4gT25Db21wbGV0aW9uCiAgICAhCiAgICBhc3NlcnQgLy8gT25Db21wbGV0aW9uIGlzIE5vT3AKICAgIHR4biBBcHBsaWNhdGlvbklECiAgICBhc3NlcnQgLy8gaXMgbm90IGNyZWF0aW5nCiAgICB0eG4gR3JvdXBJbmRleAogICAgaW50IDEKICAgIC0KICAgIGR1cAogICAgZ3R4bnMgVHlwZUVudW0KICAgIGludCBwYXkKICAgID09CiAgICBhc3NlcnQgLy8gdHJhbnNhY3Rpb24gdHlwZSBpcyBwYXkKICAgIGNhbGxzdWIgb3B0SW5Ub0Fzc2V0CiAgICBpbnQgMQogICAgcmV0c3ViCgpfX3B1eWFfYXJjNF9yb3V0ZXJfX19idXlfcm91dGVANToKICAgIHR4biBPbkNvbXBsZXRpb24KICAgICEKICAgIGFzc2VydCAvLyBPbkNvbXBsZXRpb24gaXMgTm9PcAogICAgdHhuIEFwcGxpY2F0aW9uSUQKICAgIGFzc2VydCAvLyBpcyBub3QgY3JlYXRpbmcKICAgIHR4biBHcm91cEluZGV4CiAgICBpbnQgMQogICAgLQogICAgZHVwCiAgICBndHhucyBUeXBlRW51bQogICAgaW50IHBheQogICAgPT0KICAgIGFzc2VydCAvLyB0cmFuc2FjdGlvbiB0eXBlIGlzIHBheQogICAgdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQogICAgYnRvaQogICAgY2FsbHN1YiBidXkKICAgIGludCAxCiAgICByZXRzdWIKCl9fcHV5YV9hcmM0X3JvdXRlcl9fX2RlbGV0ZUFwcGxpY2F0aW9uX3JvdXRlQDY6CiAgICB0eG4gT25Db21wbGV0aW9uCiAgICBpbnQgRGVsZXRlQXBwbGljYXRpb24KICAgID09CiAgICBhc3NlcnQgLy8gT25Db21wbGV0aW9uIGlzIERlbGV0ZUFwcGxpY2F0aW9uCiAgICB0eG4gQXBwbGljYXRpb25JRAogICAgYXNzZXJ0IC8vIGlzIG5vdCBjcmVhdGluZwogICAgY2FsbHN1YiBkZWxldGVBcHBsaWNhdGlvbgogICAgaW50IDEKICAgIHJldHN1YgoKX19wdXlhX2FyYzRfcm91dGVyX19fYWZ0ZXJfaWZfZWxzZUAxMDoKICAgIGludCAwCiAgICByZXRzdWIKCgovLyBzbWFydF9jb250cmFjdHMuZXhjaGFuZ2VfcG9pbnRzLmNvbnRyYWN0Lk1hcmtldHBsYWNlU21hcnRDb250cmFjdC5jcmVhdGVBcHBsaWNhdGlvbihhc3NldElkOiB1aW50NjQsIHVuaXRhcnlQcmljZTogdWludDY0KSAtPiB2b2lkOgpjcmVhdGVBcHBsaWNhdGlvbjoKICAgIHByb3RvIDIgMAogICAgYnl0ZSAiYXNzZXRJZCIKICAgIGZyYW1lX2RpZyAtMgogICAgYXBwX2dsb2JhbF9wdXQKICAgIGJ5dGUgInVuaXRhcnlQcmljZSIKICAgIGZyYW1lX2RpZyAtMQogICAgYXBwX2dsb2JhbF9wdXQKICAgIHJldHN1YgoKCi8vIHNtYXJ0X2NvbnRyYWN0cy5leGNoYW5nZV9wb2ludHMuY29udHJhY3QuTWFya2V0cGxhY2VTbWFydENvbnRyYWN0LnNldFByaWNlKHVuaXRhcnlQcmljZTogdWludDY0KSAtPiB2b2lkOgpzZXRQcmljZToKICAgIHByb3RvIDEgMAogICAgdHhuIFNlbmRlcgogICAgZ2xvYmFsIENyZWF0b3JBZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0CiAgICBieXRlICJ1bml0YXJ5UHJpY2UiCiAgICBmcmFtZV9kaWcgLTEKICAgIGFwcF9nbG9iYWxfcHV0CiAgICByZXRzdWIKCgovLyBzbWFydF9jb250cmFjdHMuZXhjaGFuZ2VfcG9pbnRzLmNvbnRyYWN0Lk1hcmtldHBsYWNlU21hcnRDb250cmFjdC5vcHRJblRvQXNzZXQobWJyUGF5OiB1aW50NjQpIC0+IHZvaWQ6Cm9wdEluVG9Bc3NldDoKICAgIHByb3RvIDEgMAogICAgdHhuIFNlbmRlcgogICAgZ2xvYmFsIENyZWF0b3JBZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0CiAgICBnbG9iYWwgQ3VycmVudEFwcGxpY2F0aW9uQWRkcmVzcwogICAgaW50IDAKICAgIGJ5dGUgImFzc2V0SWQiCiAgICBhcHBfZ2xvYmFsX2dldF9leAogICAgYXNzZXJ0IC8vIGNoZWNrIHNlbGYuYXNzZXRJZCBleGlzdHMKICAgIGFzc2V0X2hvbGRpbmdfZ2V0IEFzc2V0QmFsYW5jZQogICAgYnVyeSAxCiAgICAhCiAgICBhc3NlcnQKICAgIGZyYW1lX2RpZyAtMQogICAgZ3R4bnMgUmVjZWl2ZXIKICAgIGdsb2JhbCBDdXJyZW50QXBwbGljYXRpb25BZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0CiAgICBmcmFtZV9kaWcgLTEKICAgIGd0eG5zIEFtb3VudAogICAgZ2xvYmFsIE1pbkJhbGFuY2UKICAgIGdsb2JhbCBBc3NldE9wdEluTWluQmFsYW5jZQogICAgKwogICAgPT0KICAgIGFzc2VydAogICAgaXR4bl9iZWdpbgogICAgaW50IDAKICAgIGJ5dGUgImFzc2V0SWQiCiAgICBhcHBfZ2xvYmFsX2dldF9leAogICAgYXNzZXJ0IC8vIGNoZWNrIHNlbGYuYXNzZXRJZCBleGlzdHMKICAgIGdsb2JhbCBDdXJyZW50QXBwbGljYXRpb25BZGRyZXNzCiAgICBpbnQgMAogICAgaXR4bl9maWVsZCBBc3NldEFtb3VudAogICAgaXR4bl9maWVsZCBBc3NldFJlY2VpdmVyCiAgICBpdHhuX2ZpZWxkIFhmZXJBc3NldAogICAgaW50IGF4ZmVyCiAgICBpdHhuX2ZpZWxkIFR5cGVFbnVtCiAgICBpbnQgMAogICAgaXR4bl9maWVsZCBGZWUKICAgIGl0eG5fc3VibWl0CiAgICByZXRzdWIKCgovLyBzbWFydF9jb250cmFjdHMuZXhjaGFuZ2VfcG9pbnRzLmNvbnRyYWN0Lk1hcmtldHBsYWNlU21hcnRDb250cmFjdC5idXkoYnV5ZXJUeG46IHVpbnQ2NCwgcXVhbnRpdHk6IHVpbnQ2NCkgLT4gdm9pZDoKYnV5OgogICAgcHJvdG8gMiAwCiAgICBpbnQgMAogICAgYnl0ZSAidW5pdGFyeVByaWNlIgogICAgYXBwX2dsb2JhbF9nZXRfZXgKICAgIGFzc2VydCAvLyBjaGVjayBzZWxmLnVuaXRhcnlQcmljZSBleGlzdHMKICAgIGFzc2VydAogICAgdHhuIFNlbmRlcgogICAgZnJhbWVfZGlnIC0yCiAgICBndHhucyBTZW5kZXIKICAgID09CiAgICBhc3NlcnQKICAgIGZyYW1lX2RpZyAtMgogICAgZ3R4bnMgUmVjZWl2ZXIKICAgIGdsb2JhbCBDdXJyZW50QXBwbGljYXRpb25BZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0CiAgICBmcmFtZV9kaWcgLTIKICAgIGd0eG5zIEFtb3VudAogICAgaW50IDAKICAgIGJ5dGUgInVuaXRhcnlQcmljZSIKICAgIGFwcF9nbG9iYWxfZ2V0X2V4CiAgICBhc3NlcnQgLy8gY2hlY2sgc2VsZi51bml0YXJ5UHJpY2UgZXhpc3RzCiAgICBmcmFtZV9kaWcgLTEKICAgICoKICAgID09CiAgICBhc3NlcnQKICAgIGl0eG5fYmVnaW4KICAgIGludCAwCiAgICBieXRlICJhc3NldElkIgogICAgYXBwX2dsb2JhbF9nZXRfZXgKICAgIGFzc2VydCAvLyBjaGVjayBzZWxmLmFzc2V0SWQgZXhpc3RzCiAgICB0eG4gU2VuZGVyCiAgICBmcmFtZV9kaWcgLTEKICAgIGl0eG5fZmllbGQgQXNzZXRBbW91bnQKICAgIGl0eG5fZmllbGQgQXNzZXRSZWNlaXZlcgogICAgaXR4bl9maWVsZCBYZmVyQXNzZXQKICAgIGludCBheGZlcgogICAgaXR4bl9maWVsZCBUeXBlRW51bQogICAgaW50IDAKICAgIGl0eG5fZmllbGQgRmVlCiAgICBpdHhuX3N1Ym1pdAogICAgcmV0c3ViCgoKLy8gc21hcnRfY29udHJhY3RzLmV4Y2hhbmdlX3BvaW50cy5jb250cmFjdC5NYXJrZXRwbGFjZVNtYXJ0Q29udHJhY3QuZGVsZXRlQXBwbGljYXRpb24oKSAtPiB2b2lkOgpkZWxldGVBcHBsaWNhdGlvbjoKICAgIHByb3RvIDAgMAogICAgdHhuIFNlbmRlcgogICAgZ2xvYmFsIENyZWF0b3JBZGRyZXNzCiAgICA9PQogICAgYXNzZXJ0CiAgICBpdHhuX2JlZ2luCiAgICBpbnQgMAogICAgYnl0ZSAiYXNzZXRJZCIKICAgIGFwcF9nbG9iYWxfZ2V0X2V4CiAgICBhc3NlcnQgLy8gY2hlY2sgc2VsZi5hc3NldElkIGV4aXN0cwogICAgZ2xvYmFsIENyZWF0b3JBZGRyZXNzCiAgICBkdXAKICAgIGl0eG5fZmllbGQgQXNzZXRDbG9zZVRvCiAgICBpbnQgMAogICAgaXR4bl9maWVsZCBBc3NldEFtb3VudAogICAgaXR4bl9maWVsZCBBc3NldFJlY2VpdmVyCiAgICBpdHhuX2ZpZWxkIFhmZXJBc3NldAogICAgaW50IGF4ZmVyCiAgICBpdHhuX2ZpZWxkIFR5cGVFbnVtCiAgICBpbnQgMAogICAgaXR4bl9maWVsZCBGZWUKICAgIGl0eG5fc3VibWl0CiAgICBpdHhuX2JlZ2luCiAgICBnbG9iYWwgQ3JlYXRvckFkZHJlc3MKICAgIGR1cAogICAgaXR4bl9maWVsZCBDbG9zZVJlbWFpbmRlclRvCiAgICBpbnQgMAogICAgaXR4bl9maWVsZCBBbW91bnQKICAgIGl0eG5fZmllbGQgUmVjZWl2ZXIKICAgIGludCBwYXkKICAgIGl0eG5fZmllbGQgVHlwZUVudW0KICAgIGludCAwCiAgICBpdHhuX2ZpZWxkIEZlZQogICAgaXR4bl9zdWJtaXQKICAgIHJldHN1Ygo=",
+        "clear": "I3ByYWdtYSB2ZXJzaW9uIDEwCgpzbWFydF9jb250cmFjdHMuZXhjaGFuZ2VfcG9pbnRzLmNvbnRyYWN0Lk1hcmtldHBsYWNlU21hcnRDb250cmFjdC5jbGVhcl9zdGF0ZV9wcm9ncmFtOgogICAgaW50IDEKICAgIHJldHVybgo="
     },
     "state": {
         "global": {
             "num_byte_slices": 0,
-            "num_uints": 3
+            "num_uints": 2
         },
         "local": {
             "num_byte_slices": 0,
@@ -66,17 +66,13 @@ _APP_SPEC_JSON = r"""{
     "schema": {
         "global": {
             "declared": {
-                "exchange_rate": {
+                "assetId": {
                     "type": "uint64",
-                    "key": "exchange_rate"
+                    "key": "assetId"
                 },
-                "lei_laciaun_points_asset_id": {
+                "unitaryPrice": {
                     "type": "uint64",
-                    "key": "lei_laciaun_points_asset_id"
-                },
-                "lei_ograda_points_asset_id": {
-                    "type": "uint64",
-                    "key": "lei_ograda_points_asset_id"
+                    "key": "unitaryPrice"
                 }
             },
             "reserved": {}
@@ -87,22 +83,18 @@ _APP_SPEC_JSON = r"""{
         }
     },
     "contract": {
-        "name": "LoyaltyExchangeContract",
+        "name": "MarketplaceSmartContract",
         "methods": [
             {
                 "name": "createApplication",
                 "args": [
                     {
                         "type": "asset",
-                        "name": "lei_ograda_points"
-                    },
-                    {
-                        "type": "asset",
-                        "name": "lei_laciaun_points"
+                        "name": "assetId"
                     },
                     {
                         "type": "uint64",
-                        "name": "exchange_rate"
+                        "name": "unitaryPrice"
                     }
                 ],
                 "returns": {
@@ -110,11 +102,11 @@ _APP_SPEC_JSON = r"""{
                 }
             },
             {
-                "name": "setExchangeRate",
+                "name": "setPrice",
                 "args": [
                     {
                         "type": "uint64",
-                        "name": "new_rate"
+                        "name": "unitaryPrice"
                     }
                 ],
                 "returns": {
@@ -122,7 +114,7 @@ _APP_SPEC_JSON = r"""{
                 }
             },
             {
-                "name": "optInToAssets",
+                "name": "optInToAsset",
                 "args": [
                     {
                         "type": "pay",
@@ -134,11 +126,11 @@ _APP_SPEC_JSON = r"""{
                 }
             },
             {
-                "name": "exchangePoints",
+                "name": "buy",
                 "args": [
                     {
-                        "type": "axfer",
-                        "name": "ograda_transfer"
+                        "type": "pay",
+                        "name": "buyerTxn"
                     },
                     {
                         "type": "uint64",
@@ -245,42 +237,41 @@ def _convert_deploy_args(
 
 
 @dataclasses.dataclass(kw_only=True)
-class SetExchangeRateArgs(_ArgsBase[None]):
-    new_rate: int
+class SetPriceArgs(_ArgsBase[None]):
+    unitaryPrice: int
 
     @staticmethod
     def method() -> str:
-        return "setExchangeRate(uint64)void"
+        return "setPrice(uint64)void"
 
 
 @dataclasses.dataclass(kw_only=True)
-class OptInToAssetsArgs(_ArgsBase[None]):
+class OptInToAssetArgs(_ArgsBase[None]):
     mbrPay: TransactionWithSigner
 
     @staticmethod
     def method() -> str:
-        return "optInToAssets(pay)void"
+        return "optInToAsset(pay)void"
 
 
 @dataclasses.dataclass(kw_only=True)
-class ExchangePointsArgs(_ArgsBase[None]):
-    ograda_transfer: TransactionWithSigner
+class BuyArgs(_ArgsBase[None]):
+    buyerTxn: TransactionWithSigner
     quantity: int
 
     @staticmethod
     def method() -> str:
-        return "exchangePoints(axfer,uint64)void"
+        return "buy(pay,uint64)void"
 
 
 @dataclasses.dataclass(kw_only=True)
 class CreateApplicationArgs(_ArgsBase[None]):
-    lei_ograda_points: int
-    lei_laciaun_points: int
-    exchange_rate: int
+    assetId: int
+    unitaryPrice: int
 
     @staticmethod
     def method() -> str:
-        return "createApplication(asset,asset,uint64)void"
+        return "createApplication(asset,uint64)void"
 
 
 @dataclasses.dataclass(kw_only=True)
@@ -292,9 +283,8 @@ class DeleteApplicationArgs(_ArgsBase[None]):
 
 class GlobalState:
     def __init__(self, data: dict[bytes, bytes | int]):
-        self.exchange_rate = typing.cast(int, data.get(b"exchange_rate"))
-        self.lei_laciaun_points_asset_id = typing.cast(int, data.get(b"lei_laciaun_points_asset_id"))
-        self.lei_ograda_points_asset_id = typing.cast(int, data.get(b"lei_ograda_points_asset_id"))
+        self.assetId = typing.cast(int, data.get(b"assetId"))
+        self.unitaryPrice = typing.cast(int, data.get(b"unitaryPrice"))
 
 
 @dataclasses.dataclass(kw_only=True)
@@ -328,20 +318,20 @@ class Composer:
     def execute(self) -> AtomicTransactionResponse:
         return self.app_client.execute_atc(self.atc)
 
-    def set_exchange_rate(
+    def set_price(
         self,
         *,
-        new_rate: int,
+        unitaryPrice: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> "Composer":
-        """Adds a call to `setExchangeRate(uint64)void` ABI method
+        """Adds a call to `setPrice(uint64)void` ABI method
         
-        :param int new_rate: The `new_rate` ABI parameter
+        :param int unitaryPrice: The `unitaryPrice` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns Composer: This Composer instance"""
 
-        args = SetExchangeRateArgs(
-            new_rate=new_rate,
+        args = SetPriceArgs(
+            unitaryPrice=unitaryPrice,
         )
         self.app_client.compose_call(
             self.atc,
@@ -351,19 +341,19 @@ class Composer:
         )
         return self
 
-    def opt_in_to_assets(
+    def opt_in_to_asset(
         self,
         *,
         mbrPay: TransactionWithSigner,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> "Composer":
-        """Adds a call to `optInToAssets(pay)void` ABI method
+        """Adds a call to `optInToAsset(pay)void` ABI method
         
         :param TransactionWithSigner mbrPay: The `mbrPay` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns Composer: This Composer instance"""
 
-        args = OptInToAssetsArgs(
+        args = OptInToAssetArgs(
             mbrPay=mbrPay,
         )
         self.app_client.compose_call(
@@ -374,22 +364,22 @@ class Composer:
         )
         return self
 
-    def exchange_points(
+    def buy(
         self,
         *,
-        ograda_transfer: TransactionWithSigner,
+        buyerTxn: TransactionWithSigner,
         quantity: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> "Composer":
-        """Adds a call to `exchangePoints(axfer,uint64)void` ABI method
+        """Adds a call to `buy(pay,uint64)void` ABI method
         
-        :param TransactionWithSigner ograda_transfer: The `ograda_transfer` ABI parameter
+        :param TransactionWithSigner buyerTxn: The `buyerTxn` ABI parameter
         :param int quantity: The `quantity` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns Composer: This Composer instance"""
 
-        args = ExchangePointsArgs(
-            ograda_transfer=ograda_transfer,
+        args = BuyArgs(
+            buyerTxn=buyerTxn,
             quantity=quantity,
         )
         self.app_client.compose_call(
@@ -403,25 +393,22 @@ class Composer:
     def create_create_application(
         self,
         *,
-        lei_ograda_points: int,
-        lei_laciaun_points: int,
-        exchange_rate: int,
+        assetId: int,
+        unitaryPrice: int,
         on_complete: typing.Literal["no_op"] = "no_op",
         transaction_parameters: algokit_utils.CreateTransactionParameters | None = None,
     ) -> "Composer":
-        """Adds a call to `createApplication(asset,asset,uint64)void` ABI method
+        """Adds a call to `createApplication(asset,uint64)void` ABI method
         
-        :param int lei_ograda_points: The `lei_ograda_points` ABI parameter
-        :param int lei_laciaun_points: The `lei_laciaun_points` ABI parameter
-        :param int exchange_rate: The `exchange_rate` ABI parameter
+        :param int assetId: The `assetId` ABI parameter
+        :param int unitaryPrice: The `unitaryPrice` ABI parameter
         :param typing.Literal[no_op] on_complete: On completion type to use
         :param algokit_utils.CreateTransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns Composer: This Composer instance"""
 
         args = CreateApplicationArgs(
-            lei_ograda_points=lei_ograda_points,
-            lei_laciaun_points=lei_laciaun_points,
-            exchange_rate=exchange_rate,
+            assetId=assetId,
+            unitaryPrice=unitaryPrice,
         )
         self.app_client.compose_create(
             self.atc,
@@ -464,8 +451,8 @@ class Composer:
         return self
 
 
-class LoyaltyExchangeContractClient:
-    """A class for interacting with the LoyaltyExchangeContract app providing high productivity and
+class MarketplaceSmartContractClient:
+    """A class for interacting with the MarketplaceSmartContract app providing high productivity and
     strongly typed methods to deploy and call the app"""
 
     @typing.overload
@@ -513,7 +500,7 @@ class LoyaltyExchangeContractClient:
         app_name: str | None = None,
     ) -> None:
         """
-        LoyaltyExchangeContractClient can be created with an app_id to interact with an existing application, alternatively
+        MarketplaceSmartContractClient can be created with an app_id to interact with an existing application, alternatively
         it can be created with a creator and indexer_client specified to find existing applications by name and creator.
         
         :param AlgodClient algod_client: AlgoSDK algod client
@@ -596,20 +583,20 @@ class LoyaltyExchangeContractClient:
         state = typing.cast(dict[bytes, bytes | int], self.app_client.get_global_state(raw=True))
         return GlobalState(state)
 
-    def set_exchange_rate(
+    def set_price(
         self,
         *,
-        new_rate: int,
+        unitaryPrice: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> algokit_utils.ABITransactionResponse[None]:
-        """Calls `setExchangeRate(uint64)void` ABI method
+        """Calls `setPrice(uint64)void` ABI method
         
-        :param int new_rate: The `new_rate` ABI parameter
+        :param int unitaryPrice: The `unitaryPrice` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns algokit_utils.ABITransactionResponse[None]: The result of the transaction"""
 
-        args = SetExchangeRateArgs(
-            new_rate=new_rate,
+        args = SetPriceArgs(
+            unitaryPrice=unitaryPrice,
         )
         result = self.app_client.call(
             call_abi_method=args.method(),
@@ -618,19 +605,19 @@ class LoyaltyExchangeContractClient:
         )
         return result
 
-    def opt_in_to_assets(
+    def opt_in_to_asset(
         self,
         *,
         mbrPay: TransactionWithSigner,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> algokit_utils.ABITransactionResponse[None]:
-        """Calls `optInToAssets(pay)void` ABI method
+        """Calls `optInToAsset(pay)void` ABI method
         
         :param TransactionWithSigner mbrPay: The `mbrPay` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns algokit_utils.ABITransactionResponse[None]: The result of the transaction"""
 
-        args = OptInToAssetsArgs(
+        args = OptInToAssetArgs(
             mbrPay=mbrPay,
         )
         result = self.app_client.call(
@@ -640,22 +627,22 @@ class LoyaltyExchangeContractClient:
         )
         return result
 
-    def exchange_points(
+    def buy(
         self,
         *,
-        ograda_transfer: TransactionWithSigner,
+        buyerTxn: TransactionWithSigner,
         quantity: int,
         transaction_parameters: algokit_utils.TransactionParameters | None = None,
     ) -> algokit_utils.ABITransactionResponse[None]:
-        """Calls `exchangePoints(axfer,uint64)void` ABI method
+        """Calls `buy(pay,uint64)void` ABI method
         
-        :param TransactionWithSigner ograda_transfer: The `ograda_transfer` ABI parameter
+        :param TransactionWithSigner buyerTxn: The `buyerTxn` ABI parameter
         :param int quantity: The `quantity` ABI parameter
         :param algokit_utils.TransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns algokit_utils.ABITransactionResponse[None]: The result of the transaction"""
 
-        args = ExchangePointsArgs(
-            ograda_transfer=ograda_transfer,
+        args = BuyArgs(
+            buyerTxn=buyerTxn,
             quantity=quantity,
         )
         result = self.app_client.call(
@@ -668,25 +655,22 @@ class LoyaltyExchangeContractClient:
     def create_create_application(
         self,
         *,
-        lei_ograda_points: int,
-        lei_laciaun_points: int,
-        exchange_rate: int,
+        assetId: int,
+        unitaryPrice: int,
         on_complete: typing.Literal["no_op"] = "no_op",
         transaction_parameters: algokit_utils.CreateTransactionParameters | None = None,
     ) -> algokit_utils.ABITransactionResponse[None]:
-        """Calls `createApplication(asset,asset,uint64)void` ABI method
+        """Calls `createApplication(asset,uint64)void` ABI method
         
-        :param int lei_ograda_points: The `lei_ograda_points` ABI parameter
-        :param int lei_laciaun_points: The `lei_laciaun_points` ABI parameter
-        :param int exchange_rate: The `exchange_rate` ABI parameter
+        :param int assetId: The `assetId` ABI parameter
+        :param int unitaryPrice: The `unitaryPrice` ABI parameter
         :param typing.Literal[no_op] on_complete: On completion type to use
         :param algokit_utils.CreateTransactionParameters transaction_parameters: (optional) Additional transaction parameters
         :returns algokit_utils.ABITransactionResponse[None]: The result of the transaction"""
 
         args = CreateApplicationArgs(
-            lei_ograda_points=lei_ograda_points,
-            lei_laciaun_points=lei_laciaun_points,
-            exchange_rate=exchange_rate,
+            assetId=assetId,
+            unitaryPrice=unitaryPrice,
         )
         result = self.app_client.create(
             call_abi_method=args.method(),

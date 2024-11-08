@@ -1,0 +1,5 @@
+#pragma version 10
+
+smart_contracts.exchange_points.contract.MarketplaceSmartContract.clear_state_program:
+    int 1
+    return

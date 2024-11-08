@@ -1,5 +1,0 @@
-#pragma version 10
-
-smart_contracts.exchange_points.contract.LoyaltyExchangeContract.clear_state_program:
-    int 1
-    return
