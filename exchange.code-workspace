@@ -6,6 +6,9 @@
     },
     {
       "path": "projects/exchange"
+    },
+    {
+      "path": "projects/frontend"
     }
   ],
   "settings": {
