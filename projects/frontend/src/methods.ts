@@ -18,6 +18,7 @@ export function create(
         total: quantity,
       })
       assetId = BigInt(assetCreate.confirmation.assetIndex!)
+      //assetId = BigInt(1023)
     }
 
     const createResult = await dmClient.create.createApplication({ assetId, unitaryPrice })
